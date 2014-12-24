@@ -11,44 +11,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141224024929) do
+ActiveRecord::Schema.define(version: 20141224022050) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "laps", force: :cascade do |t|
-    t.integer  "run_id"
-    t.string   "number"
-    t.time     "begin_at"
-    t.time     "end_at"
-    t.float    "distance"
-    t.float    "duration"
-    t.float    "mean_heart_rate"
-    t.float    "mean_pace"
-    t.float    "mean_stride_length"
-    t.float    "mean_cadence"
-    t.float    "mean_gct"
-    t.float    "mean_vertical_oscillation"
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
-  end
-
-  add_index "laps", ["run_id"], name: "index_laps_on_run_id", using: :btree
-
-  create_table "readings", force: :cascade do |t|
-    t.integer  "weather_id"
-    t.integer  "station_id"
-    t.time     "time"
-    t.float    "temp"
-    t.float    "high"
-    t.float    "low"
-    t.float    "humidity"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  add_index "readings", ["station_id"], name: "index_readings_on_station_id", using: :btree
-  add_index "readings", ["weather_id"], name: "index_readings_on_weather_id", using: :btree
 
   create_table "runs", force: :cascade do |t|
     t.integer  "user_id"
@@ -85,11 +51,6 @@ ActiveRecord::Schema.define(version: 20141224024929) do
 
   add_index "shoes", ["user_id"], name: "index_shoes_on_user_id", using: :btree
 
-  create_table "stations", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "users", force: :cascade do |t|
     t.string   "email"
     t.string   "crypted_password"
@@ -98,22 +59,6 @@ ActiveRecord::Schema.define(version: 20141224024929) do
     t.datetime "updated_at",       null: false
   end
 
-  create_table "weathers", force: :cascade do |t|
-    t.float    "temp"
-    t.float    "high"
-    t.float    "low"
-    t.float    "humidity"
-    t.integer  "running_id"
-    t.string   "running_type"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-  end
-
-  add_index "weathers", ["running_type", "running_id"], name: "index_weathers_on_running_type_and_running_id", using: :btree
-
-  add_foreign_key "laps", "runs"
-  add_foreign_key "readings", "stations"
-  add_foreign_key "readings", "weathers"
   add_foreign_key "runs", "shoes"
   add_foreign_key "runs", "users"
   add_foreign_key "shoes", "users"

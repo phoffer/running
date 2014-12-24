@@ -6,8 +6,9 @@ class Run < ActiveRecord::Base
 
   has_many :laps
   has_one :weather, as: :running
+  has_many :readings, through: :weather
 
-  before_create :prepare_raw_data
+  # before_create :prepare_raw_data
 
   def pace
     # convert mean_pace to string 'xx:xx:xx'
@@ -24,7 +25,7 @@ class Run < ActiveRecord::Base
         distance:                  %w{activitySummary SumDistance value},
         duration:                  %w{activitySummary SumElapsedDuration value},
         mean_heart_rate:           %w{activitySummary WeightedMeanHeartRate bpm value},
-        mean_pace:                 %w{activitySummary WeightedMeanPace display},
+        mean_pace:                 %w{activitySummary WeightedMeanPace value},
         mean_stride_length:        %w{activitySummary WeightedMeanStrideLength value},
         mean_cadence:              %w{activitySummary WeightedMeanDoubleCadence value},
         mean_gct:                  %w{activitySummary WeightedMeanGroundContactTime value},
@@ -39,9 +40,9 @@ class Run < ActiveRecord::Base
           hash[name] = hash[name][k]
         end
       end
-      attributes[:begin_at] = Time.parse(attributes[:begin_at])
-      attributes[:end_at]   = Time.parse(attributes[:end_at])
-      attributes[:mean_pace] = attributes[:mean_pace].gsub(/\A0/, '')
+      attributes[:begin_at]  = Time.parse(attributes[:begin_at])
+      attributes[:end_at]    = Time.parse(attributes[:end_at])
+      # attributes[:mean_pace] = attributes[:mean_pace].gsub(/\A0/, '')
       new(attributes)
     end
 
