@@ -2,17 +2,15 @@ class CreateReadings < ActiveRecord::Migration
   def change
     create_table :readings do |t|
       t.references :weather, index: true
-      t.references :station, index: true
+      # t.references :station, index: true
 
       t.time  :time
       t.float :temp
-      t.float :high
-      t.float :low
       t.float :humidity
 
       t.timestamps null: false
     end
     add_foreign_key :readings, :weathers
-    add_foreign_key :readings, :stations
+    # add_foreign_key :readings, :stations
   end
 end

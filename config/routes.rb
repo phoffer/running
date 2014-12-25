@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  resources :stations
-
   resources :runs
 
   resources :shoes
