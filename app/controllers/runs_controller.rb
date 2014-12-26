@@ -4,7 +4,7 @@ class RunsController < ApplicationController
   # GET /runs
   # GET /runs.json
   def index
-    @runs = Run.all
+    # @runs = Run.all
     @activities = @user.activities
   end
 
@@ -45,7 +45,7 @@ class RunsController < ApplicationController
   def update
     respond_to do |format|
       if @run.update(run_params)
-        format.html { redirect_to @run, notice: 'Run was successfully updated.' }
+        format.html { redirect_to request.referrer, notice: 'Run was successfully updated.' }
         format.json { render :show, status: :ok, location: @run }
       else
         format.html { render :edit }
@@ -74,6 +74,6 @@ class RunsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def run_params
-      params[:run]
+      params.require(:run).permit(laps_attributes: [:id, :distance])
     end
 end

@@ -6,8 +6,10 @@ class CreateShoes < ActiveRecord::Migration
       t.string  :model
       t.integer :version
       t.string  :letter
-      t.float   :miles
+      t.integer :status,  default: 0
+      t.float   :miles,   default: 0
       t.integer :expectation
+      t.string  :defaults,  array: true
       t.decimal :cost
       t.string  :location
 

@@ -11,6 +11,11 @@
     </div>
   <% end %>
 
+
+  <%= f.fields_for :laps do |lap| %>
+    <%= lap.text_field :distance, value: lap.object.display[:distance] %>
+    <br />
+  <% end %>
   <div class="actions">
     <%= f.submit %>
   </div>

@@ -56,6 +56,7 @@ ActiveRecord::Schema.define(version: 20141224024921) do
     t.string   "event_type"
     t.datetime "begin_at"
     t.datetime "end_at"
+    t.string   "time_zone"
     t.float    "distance"
     t.float    "duration"
     t.float    "latitude"
@@ -80,12 +81,14 @@ ActiveRecord::Schema.define(version: 20141224024921) do
     t.string   "model"
     t.integer  "version"
     t.string   "letter"
-    t.float    "miles"
+    t.integer  "status",      default: 0
+    t.float    "miles",       default: 0.0
     t.integer  "expectation"
+    t.string   "defaults",                               array: true
     t.decimal  "cost"
     t.string   "location"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
   end
 
   add_index "shoes", ["user_id"], name: "index_shoes_on_user_id", using: :btree

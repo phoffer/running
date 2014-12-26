@@ -9,15 +9,21 @@ class Run < ActiveRecord::Base
   has_one :weather, as: :running, dependent: :destroy
   has_many :readings, through: :weather
 
-  delegate :temp, to: :weather
+  delegate :temp, to: :weather, allow_nil: true
+  accepts_nested_attributes_for :laps
 
+  TREADMILL_CODE = 'treadmill_running'.freeze
+  CATEGORIES = %i{wet rain snow treadmill track race}
+
+  def categories # maybe use this to help set default shoe automatically
+    # options = %i{wet rain snow treadmill track race}
+  end
   def treadmill?
-    self.activity_type.include? 'treadmill'
+    self.activity_type == TREADMILL_CODE
   end
 
   def pace
     Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, '')
-    # convert mean_pace to string 'xx:xx:xx'
   end
   # def distance
   #   self.attributes['distance'].round(2)
@@ -30,7 +36,7 @@ class Run < ActiveRecord::Base
       cadence:        self.mean_cadence.round,
       gct:            self.mean_gct.round,
       vertical_oscillation: self.mean_vertical_oscillation.round(2),
-      duration:       Time.at(self.duration).strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
+      duration:       Time.at(self.duration).utc.strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
     }
   end
 
@@ -46,7 +52,7 @@ class Run < ActiveRecord::Base
     json = JSON.parse(open("http://connect.garmin.com/proxy/activity-service-1.3/json/activityDetails/#{self.garmin_id}").read)["com.garmin.activity.details.json.ActivityDetails"]
     items    = json['measurements'].sort_by { |h| h['metricsIndex'] }.map { |h| h['key'].underscore.gsub(/\A[^_]+_/, '').to_sym }
     # @details = json['metrics'].map { |m| Metric.new(m) }
-    @details = json['metrics'].map { |arr| Metric.new items.zip(arr['metrics']).each_with_object({}) {|(k,v), hash| hash[k] = v } }
+    @details = json['metrics'].map { |arr| Metric.new items.zip(arr['metrics']).to_h }
   end
 
   def build_laps(data = nil)
@@ -54,96 +60,6 @@ class Run < ActiveRecord::Base
   end
 
 
-
-  class << self
-    def attribute_paths
-      {
-        garmin_id:                  %w{activityId},
-        activity_type:              %w{activityType key},
-        event_type:                 %w{eventType key},
-        begin_at:                   %w{activitySummary BeginTimestamp withUnitAbbr},
-        end_at:                     %w{activitySummary EndTimestamp withUnitAbbr},
-        latitude:                   %w{activitySummary BeginLatitude value},
-        longitude:                  %w{activitySummary BeginLongitude value},
-        distance:                   %w{activitySummary SumDistance value},
-        duration:                   %w{activitySummary SumElapsedDuration value},
-        mean_heart_rate:            %w{activitySummary WeightedMeanHeartRate bpm value},
-        mean_pace:                  %w{activitySummary WeightedMeanPace value},
-        mean_stride_length:         %w{activitySummary WeightedMeanStrideLength value},
-        mean_cadence:               %w{activitySummary WeightedMeanDoubleCadence value},
-        mean_gct:                   %w{activitySummary WeightedMeanGroundContactTime value},
-        mean_vertical_oscillation:  %w{activitySummary WeightedMeanVerticalOscillation value},
-      }
-    end
-    def find_or_create_from_garmin(data)
-      run = find_by_garmin_id(data)
-      return run if run
-      json = get_source(data)
-      run = new_from_json(json['activity']) do |attributes|
-        attributes[:begin_at]  = Time.parse(attributes[:begin_at])
-        attributes[:end_at]    = Time.parse(attributes[:end_at])
-        # puts attributes.inspect
-        # attributes[:mean_pace] = attributes[:mean_pace].gsub(/\A0/, '')
-      end
-      stored_max = (1.0 / json['activity']['activitySummary']['WeightedMeanHeartRate']['value'].to_f) * run.mean_heart_rate.to_f
-      run.laps = json['activity']['totalLaps']['lapSummaryList'].map.with_index do |hash, i|
-        hash['WeightedMeanHeartRate']['value'] = hash['WeightedMeanHeartRate']['value'].to_f * stored_max
-        Lap.new_from_garmin(hash, i + 1)
-      end
-      run
-    end
-    def new_from_json(json)
-      attributes = attribute_paths.each_with_object({}) do |(name, path), hash|
-        begin
-          hash[name] = json
-          while k = path.shift
-            hash[name] = hash[name][k]
-          end
-        rescue
-          hash.delete(name)
-        end
-      end
-      yield attributes
-      create(attributes)
-    end
-    def get_source(activity_id)
-      JSON.parse(open("http://connect.garmin.com/proxy/activity-service-1.3/json/activity/#{activity_id}").read)
-    end
-  end
-end
-
-class Metric
-  attr_accessor :pws, :reading, :multipled_temp, :multipled_hum, :custom_data, :seconds, :data
-  def initialize(arr)
-    @data = arr
-  end
-  def time
-    Time.at(@data[:timestamp] / 1000)
-  end
-  def method_missing(method, *args)
-    @data[method]
-  end
-  def latitude
-    @data[:latitude]
-  end
-  def longitude
-    @data[:longitude]
-  end
-  def latlong
-    [@data[:latitude], @data[:longitude]]
-  end
-  def to_s
-    inspect
-  end
-
-  class << self
-    def init_multiple(metrics)
-      metrics.map{ |hash| new(hash) }
-    end
-  end
-end
-
-class Run
   def latlong
     [self.latitude, self.longitude]
   end
@@ -173,6 +89,7 @@ class Run
         end
       rescue
         m.pws = Station.closest(m.latlong, list: local_pws - [m.pws])
+        readings[m.pws.id] = m.pws.get_readings(self.begin_at) unless readings.has_key(m.pws.id)
         retry
       end
       m.reading = current_reading
@@ -199,5 +116,59 @@ class Run
       )
     end
     self.weather
+  end
+
+  class << self
+    def attribute_paths
+      {
+        garmin_id:                  %w{activityId},
+        activity_type:              %w{activityType key},
+        event_type:                 %w{eventType key},
+        begin_at:                   %w{activitySummary BeginTimestamp withUnitAbbr},
+        end_at:                     %w{activitySummary EndTimestamp withUnitAbbr},
+        latitude:                   %w{activitySummary BeginLatitude value},
+        longitude:                  %w{activitySummary BeginLongitude value},
+        distance:                   %w{activitySummary SumDistance value},
+        duration:                   %w{activitySummary SumElapsedDuration value},
+        mean_heart_rate:            %w{activitySummary WeightedMeanHeartRate bpm value},
+        mean_pace:                  %w{activitySummary WeightedMeanPace value},
+        mean_stride_length:         %w{activitySummary WeightedMeanStrideLength value},
+        mean_cadence:               %w{activitySummary WeightedMeanDoubleCadence value},
+        mean_gct:                   %w{activitySummary WeightedMeanGroundContactTime value},
+        mean_vertical_oscillation:  %w{activitySummary WeightedMeanVerticalOscillation value},
+      }
+    end
+    def find_or_create_from_garmin(data)
+      run = find_by_garmin_id(data)
+      return run if run
+      json = get_source(data)
+      run = new_from_json(json['activity']) do |attributes|
+        attributes[:begin_at]  = Time.parse(attributes[:begin_at])
+        attributes[:end_at]    = Time.parse(attributes[:end_at])
+      end
+      stored_max = (1.0 / json['activity']['activitySummary']['WeightedMeanHeartRate']['value'].to_f) * run.mean_heart_rate.to_f
+      run.laps = json['activity']['totalLaps']['lapSummaryList'].map.with_index do |hash, i|
+        hash['WeightedMeanHeartRate']['value'] = hash['WeightedMeanHeartRate']['value'].to_f * stored_max
+        Lap.new_from_garmin(hash, i + 1)
+      end
+      run
+    end
+    def new_from_json(json)
+      attributes = attribute_paths.each_with_object({}) do |(name, path), hash|
+        begin
+          hash[name] = json
+          while k = path.shift
+            hash[name] = hash[name][k]
+          end
+        rescue
+          hash.delete(name)
+        end
+      end
+      yield attributes
+      create(attributes)
+    end
+    def get_source(activity_id)
+      JSON.parse(open("http://connect.garmin.com/proxy/activity-service-1.3/json/activity/#{activity_id}").read)
+    end
   end
 end

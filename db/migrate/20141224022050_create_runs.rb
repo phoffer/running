@@ -8,6 +8,7 @@ class CreateRuns < ActiveRecord::Migration
       t.string  :event_type
       t.datetime    :begin_at
       t.datetime    :end_at
+      t.string  :time_zone
       t.float   :distance
       t.float   :duration
       t.float   :latitude

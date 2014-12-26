@@ -28,6 +28,18 @@
     <%= f.text_field :letter %>
   </div>
   <div class="field">
+    <%= f.label :status %><br>
+    <%= f.select(:status) do %>
+      <% Shoe::STATUS.each do |status| %>
+        <%= content_tag(:option, status, value: status, selected: f.object.status == status) %>
+      <% end %>
+    <% end %>  
+  </div>
+  <div class="field">
+    <%= f.label :defaults %><br>
+    <%= collection_check_boxes(:shoe, :defaults, Run::CATEGORIES, :to_s, :to_s) %>
+  </div>
+  <div class="field">
     <%= f.label :expectation %><br>
     <%= f.number_field :expectation %>
   </div>

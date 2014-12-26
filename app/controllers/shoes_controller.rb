@@ -4,7 +4,7 @@ class ShoesController < ApplicationController
   # GET /shoes
   # GET /shoes.json
   def index
-    @shoes = Shoe.all
+    @shoes = @user.shoes.all
   end
 
   # GET /shoes/1
@@ -24,7 +24,7 @@ class ShoesController < ApplicationController
   # POST /shoes
   # POST /shoes.json
   def create
-    @shoe = Shoe.new(shoe_params)
+    @shoe = @user.shoes.new(shoe_params)
 
     respond_to do |format|
       if @shoe.save
@@ -69,6 +69,6 @@ class ShoesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def shoe_params
-      params.require(:shoe).permit(:user_id, :miles, :expectation, :cost, :location)
+      params.require(:shoe).permit(:brand, :model, :version, :letter, :status, :miles, :expectation, :cost, :location, defaults: [])
     end
 end

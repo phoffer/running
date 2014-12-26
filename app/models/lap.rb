@@ -1,12 +1,24 @@
 class Lap < ActiveRecord::Base
   belongs_to :run
   has_one :weather, as: :running
+  delegate :temp, to: :weather, allow_nil: true
 
   def time_range
     (self.begin_at..self.end_at)
   end
   def distance
     self.attributes['distance'].round(2)
+  end
+  def display
+    {
+      distance:       self.attributes['distance'].round(2),
+      pace:           Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, ''),
+      stride_length:  self.mean_stride_length.round(3),
+      cadence:        self.mean_cadence.round,
+      gct:            self.mean_gct.round,
+      vertical_oscillation: self.mean_vertical_oscillation.round(2),
+      duration:       Time.at(self.duration).utc.strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
+    }
   end
 
   class << self
@@ -27,20 +39,20 @@ class Lap < ActiveRecord::Base
     def new_from_garmin(data, number)
       json = data#.is_a?(Hash) ? data : get_source(data)
       attributes = new_from_json(json) do |attributes|
-        attributes[:begin_at] = Time.parse(attributes[:begin_at])
+        attributes[:begin_at] = Time.parse(attributes[:begin_at]) # need to switch, maybe store TZ on run and then connect it here too
         attributes[:end_at]   = Time.parse(attributes[:end_at])
         attributes[:number]   = number
       end
     end
     def new_from_json(json)
       attributes = attribute_paths.each_with_object({}) do |(name, path), hash|
-        hash[name] = json
-        while k = path.shift
-          begin
-          hash[name] = hash[name][k]
+        begin
+          hash[name] = json
+          while k = path.shift
+            hash[name] = hash[name][k]
+          end
         rescue
-          binding.pry
-        end
+          hash.delete(name)
         end
       end
       yield attributes

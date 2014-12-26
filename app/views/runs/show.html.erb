@@ -12,6 +12,9 @@
 <% end %>
 
 <% if @run.weather %>
+  <br />
+  <%= link_to 'Destroy', run_weather_path(@run.id, @run.weather.id), method: :delete, data: { confirm: 'Are you sure?' } %>
+  <br />
   <% @run.weather.attributes.each do |k,v| %>
     <%= "#{k}: #{v}" %>
     <br />
@@ -29,7 +32,10 @@
       <th>number</th>
       <th>begin_at</th>
       <th>distance</th>
-      <th>mean_heart_rate</th>
+      <th>HR</th>
+      <th><%= @run.weather ? 'Temp' : ''%></th>
+
+
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -41,6 +47,7 @@
         <td><%= lap.begin_at %></td>
         <td><%= lap.distance %></td>
         <td><%= lap.mean_heart_rate %></td>
+        <td><%= lap.temp %></td>
       </tr>
     <% end %>
   </tbody>

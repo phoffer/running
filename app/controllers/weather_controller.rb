@@ -60,7 +60,7 @@ class WeatherController < ApplicationController
   def destroy
     @weather.destroy
     respond_to do |format|
-      format.html { redirect_to weathers_url, notice: 'Weather was successfully destroyed.' }
+      format.html { redirect_to request.referrer, notice: 'Weather was successfully destroyed.' }
       format.json { head :no_content }
     end
   end
@@ -68,7 +68,7 @@ class WeatherController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_weather
-      @run = Run.find(params[:id])
+      @run = Run.find(params[:run_id])
       @weather = Weather.find(params[:id])
     end
 
