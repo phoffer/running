@@ -6,6 +6,7 @@
       t.float :high
       t.float :low
       t.float :humidity
+      t.string  :station_ids, array: true
       t.references :running, polymorphic: true, index: true
 
       t.timestamps null: false

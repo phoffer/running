@@ -1,11 +1,12 @@
 class CreateUsers < ActiveRecord::Migration
   def change
+    execute 'create extension hstore'
     create_table :users do |t|
       t.string :email
       t.string :crypted_password
-      t.json :accounts
-      t.json :settings
-      t.json :goal_race
+      t.hstore :accounts
+      t.hstore :settings
+      t.hstore :goal_race
 
       t.timestamps null: false
     end

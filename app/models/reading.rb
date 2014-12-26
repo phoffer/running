@@ -3,7 +3,7 @@ class Reading < ActiveRecord::Base
   belongs_to :weather
   belongs_to :station
 
-  delegate :lat, :lon, to: :station
+  # delegate :lat, :lon, to: :station
 
   class << self
     def attribute_paths
@@ -17,7 +17,8 @@ class Reading < ActiveRecord::Base
       data ||= get_source(station, time)
       attributes = data['history']['observations'].map do |json|
         new_from_json(json) do |attributes|
-          attributes[:time]  = Time.parse(attributes[:time])
+          attributes[:time]   = Time.parse(attributes[:time])
+          attributes[:pws_id] = station.id
         end
       end
     end

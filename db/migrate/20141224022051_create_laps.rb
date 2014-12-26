@@ -3,8 +3,8 @@ class CreateLaps < ActiveRecord::Migration
     create_table :laps do |t|
       t.references :run, index: true
       t.string  :number
-      t.time    :begin_at
-      t.time    :end_at
+      t.datetime    :begin_at
+      t.datetime    :end_at
       t.float   :distance
       t.float   :duration
       t.float   :mean_heart_rate

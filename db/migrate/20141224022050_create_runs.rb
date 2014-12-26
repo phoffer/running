@@ -3,13 +3,15 @@ class CreateRuns < ActiveRecord::Migration
     create_table :runs do |t|
       t.references :user, index: true
       t.references :shoe, index: true
-      t.integer :garmin_id
+      t.integer :garmin_id, unique: true, index: true
       t.string  :activity_type
       t.string  :event_type
-      t.time    :begin_at
-      t.time    :end_at
+      t.datetime    :begin_at
+      t.datetime    :end_at
       t.float   :distance
       t.float   :duration
+      t.float   :latitude
+      t.float   :longitude
       t.float   :mean_heart_rate
       t.float   :mean_pace
       t.float   :mean_stride_length

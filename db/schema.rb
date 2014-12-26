@@ -15,12 +15,13 @@ ActiveRecord::Schema.define(version: 20141224024921) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "hstore"
 
   create_table "laps", force: :cascade do |t|
     t.integer  "run_id"
     t.string   "number"
-    t.time     "begin_at"
-    t.time     "end_at"
+    t.datetime "begin_at"
+    t.datetime "end_at"
     t.float    "distance"
     t.float    "duration"
     t.float    "mean_heart_rate"
@@ -37,7 +38,8 @@ ActiveRecord::Schema.define(version: 20141224024921) do
 
   create_table "readings", force: :cascade do |t|
     t.integer  "weather_id"
-    t.time     "time"
+    t.string   "pws_id"
+    t.datetime "time"
     t.float    "temp"
     t.float    "humidity"
     t.datetime "created_at", null: false
@@ -52,10 +54,12 @@ ActiveRecord::Schema.define(version: 20141224024921) do
     t.integer  "garmin_id"
     t.string   "activity_type"
     t.string   "event_type"
-    t.time     "begin_at"
-    t.time     "end_at"
+    t.datetime "begin_at"
+    t.datetime "end_at"
     t.float    "distance"
     t.float    "duration"
+    t.float    "latitude"
+    t.float    "longitude"
     t.float    "mean_heart_rate"
     t.float    "mean_pace"
     t.float    "mean_stride_length"
@@ -66,11 +70,16 @@ ActiveRecord::Schema.define(version: 20141224024921) do
     t.datetime "updated_at",                null: false
   end
 
+  add_index "runs", ["garmin_id"], name: "index_runs_on_garmin_id", using: :btree
   add_index "runs", ["shoe_id"], name: "index_runs_on_shoe_id", using: :btree
   add_index "runs", ["user_id"], name: "index_runs_on_user_id", using: :btree
 
   create_table "shoes", force: :cascade do |t|
     t.integer  "user_id"
+    t.string   "brand"
+    t.string   "model"
+    t.integer  "version"
+    t.string   "letter"
     t.float    "miles"
     t.integer  "expectation"
     t.decimal  "cost"
@@ -96,6 +105,7 @@ ActiveRecord::Schema.define(version: 20141224024921) do
     t.float    "high"
     t.float    "low"
     t.float    "humidity"
+    t.string   "station_ids",               array: true
     t.integer  "running_id"
     t.string   "running_type"
     t.datetime "created_at",   null: false

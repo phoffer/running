@@ -5,7 +5,9 @@
 <table>
   <thead>
     <tr>
-      <th>User</th>
+      <th>Brand</th>
+      <th>Model</th>
+      <th>Version</th>
       <th>Miles</th>
       <th>Expectation</th>
       <th>Cost</th>
@@ -17,7 +19,9 @@
   <tbody>
     <% @shoes.each do |shoe| %>
       <tr>
-        <td><%= shoe.user %></td>
+        <td><%= shoe.brand %></td>
+        <td><%= shoe.model %></td>
+        <td><%= shoe.version.to_s + ' - ' + shoe.letter %></td>
         <td><%= shoe.miles %></td>
         <td><%= shoe.expectation %></td>
         <td><%= shoe.cost %></td>

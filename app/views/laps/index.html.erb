@@ -1,0 +1,28 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Listing Laps</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>begin_at</th>
+      <th>distance</th>
+      <th>mean_heart_rate</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @laps.each do |lap| %>
+      <tr>
+        <td><%= lap.begin_at %></td>
+        <td><%= lap.distance %></td>
+        <td><%= lap.mean_heart_rate %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Run', new_run_path %>

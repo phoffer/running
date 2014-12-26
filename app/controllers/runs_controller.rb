@@ -5,6 +5,7 @@ class RunsController < ApplicationController
   # GET /runs.json
   def index
     @runs = Run.all
+    @activities = @user.activities
   end
 
   # GET /runs/1
@@ -24,7 +25,9 @@ class RunsController < ApplicationController
   # POST /runs
   # POST /runs.json
   def create
-    @run = Run.new(run_params)
+    @run = @user.create_run(params[:garmin_id])
+    redirect_to request.referrer and return
+    # @run = Run.new(run_params)
 
     respond_to do |format|
       if @run.save
@@ -64,7 +67,9 @@ class RunsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_run
-      @run = Run.find(params[:id])
+      @run      = @user.runs.find(params[:id])
+      @laps     = @run.laps
+      @weather  = @run.weather
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.

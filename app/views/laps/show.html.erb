@@ -1,0 +1,17 @@
+<p id="notice"><%= notice %></p>
+
+<%= link_to 'Edit', edit_run_path(@run) %> |
+<%= link_to 'Back', runs_path %>
+
+<% @lap.attributes.each do |k,v| %>
+  <%= "#{k}: #{v}" %>
+  <br />
+<% end %>
+
+
+<% if @lap.weather %>
+  <% @lap.weather.attributes.each do |k,v| %>
+    <%= "#{k}: #{v}" %>
+    <br />
+  <% end %>
+<% end %>

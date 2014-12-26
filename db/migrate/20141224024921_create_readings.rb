@@ -4,9 +4,10 @@ class CreateReadings < ActiveRecord::Migration
       t.references :weather, index: true
       # t.references :station, index: true
 
-      t.time  :time
-      t.float :temp
-      t.float :humidity
+      t.string :pws_id
+      t.datetime   :time
+      t.float  :temp
+      t.float  :humidity
 
       t.timestamps null: false
     end

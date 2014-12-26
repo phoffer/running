@@ -1,5 +1,12 @@
 Rails.application.routes.draw do
-  resources :runs
+  root 'users#index'
+  resources :runs do
+    resources :laps
+    resources :weather
+    member do
+      # 
+    end
+  end
 
   resources :shoes
 
