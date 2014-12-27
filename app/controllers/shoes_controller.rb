@@ -10,11 +10,17 @@ class ShoesController < ApplicationController
   # GET /shoes/1
   # GET /shoes/1.json
   def show
+    @runs = @shoe.runs
   end
 
   # GET /shoes/new
   def new
-    @shoe = Shoe.new
+    if params[:clone]
+      @shoe = Shoe.find_by_id(params[:clone]).dup
+      @shoe.update_attributes(status: :active, letter: @shoe.letter.next, defaults: [], miles: 0)
+    else 
+      @shoe = Shoe.new
+    end
   end
 
   # GET /shoes/1/edit

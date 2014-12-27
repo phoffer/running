@@ -5,7 +5,7 @@ class CreateShoes < ActiveRecord::Migration
       t.string  :brand
       t.string  :model
       t.integer :version
-      t.string  :letter
+      t.string  :letter,  default: 'a', limit: 1
       t.integer :status,  default: 0
       t.float   :miles,   default: 0
       t.integer :expectation

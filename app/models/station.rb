@@ -39,7 +39,7 @@ class Station
     # def sort_distance(*latlong)
     #   self.list.sort_by! { |pws| pws.distance(latlong) }
     # end
-    def lookup(lat, lon = nil, blacklist: ['MQHW', 'KUTSALTL79'])
+    def lookup(lat, lon = nil, blacklist: ['MQHW', 'KUTSALTL79', 'KAZTUCSO217', 'KAZTUCSO137'])
       # puts lat.inspect
       # puts
       # puts lon.inspect

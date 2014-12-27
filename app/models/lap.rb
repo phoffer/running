@@ -6,6 +6,9 @@ class Lap < ActiveRecord::Base
   def time_range
     (self.begin_at..self.end_at)
   end
+  def time
+    self.begin_at.in_time_zone(self.run.time_zone)
+  end
   def distance
     self.attributes['distance'].round(2)
   end
@@ -24,8 +27,8 @@ class Lap < ActiveRecord::Base
   class << self
     def attribute_paths
       {
-        begin_at:                   %w{BeginTimestamp withUnitAbbr},
-        end_at:                     %w{EndTimestamp withUnitAbbr},
+        begin_at:                   %w{BeginTimestamp value},
+        end_at:                     %w{EndTimestamp value},
         distance:                   %w{SumDistance value},
         duration:                   %w{SumDuration value},
         mean_heart_rate:            %w{WeightedMeanHeartRate value},
@@ -37,10 +40,10 @@ class Lap < ActiveRecord::Base
       }
     end
     def new_from_garmin(data, number)
-      json = data#.is_a?(Hash) ? data : get_source(data)
+      json = data
       attributes = new_from_json(json) do |attributes|
-        attributes[:begin_at] = Time.parse(attributes[:begin_at]) # need to switch, maybe store TZ on run and then connect it here too
-        attributes[:end_at]   = Time.parse(attributes[:end_at])
+        attributes[:begin_at] = Time.at(("%f" % attributes[:begin_at].gsub('E', 'e')).to_i/1000)
+        attributes[:end_at]   = Time.at(("%f" % attributes[:end_at].gsub('E', 'e')).to_i/1000)
         attributes[:number]   = number
       end
     end

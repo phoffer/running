@@ -22,7 +22,7 @@
         <td><%= shoe.brand %></td>
         <td><%= shoe.model %></td>
         <td><%= shoe.version.to_s + ' - ' + shoe.letter %></td>
-        <td><%= shoe.miles %></td>
+        <td><%= shoe.miles.round(2) %></td>
         <td><%= shoe.expectation %></td>
         <td><%= shoe.cost %></td>
         <td><%= shoe.location %></td>

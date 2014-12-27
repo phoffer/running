@@ -43,8 +43,13 @@ class RunsController < ApplicationController
   # PATCH/PUT /runs/1
   # PATCH/PUT /runs/1.json
   def update
+    shoe_id = run_params[:shoe_id]
     respond_to do |format|
       if @run.update(run_params)
+        if shoe_id
+          @user.shoes.find(shoe_id).update_miles
+          @run.shoe.update_miles
+        end
         format.html { redirect_to request.referrer, notice: 'Run was successfully updated.' }
         format.json { render :show, status: :ok, location: @run }
       else
@@ -74,6 +79,6 @@ class RunsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def run_params
-      params.require(:run).permit(laps_attributes: [:id, :distance])
+      params.require(:run).permit(:shoe_id, laps_attributes: [:id, :distance])
     end
 end

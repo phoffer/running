@@ -80,15 +80,15 @@ ActiveRecord::Schema.define(version: 20141224024921) do
     t.string   "brand"
     t.string   "model"
     t.integer  "version"
-    t.string   "letter"
-    t.integer  "status",      default: 0
-    t.float    "miles",       default: 0.0
+    t.string   "letter",      limit: 1, default: "a"
+    t.integer  "status",                default: 0
+    t.float    "miles",                 default: 0.0
     t.integer  "expectation"
-    t.string   "defaults",                               array: true
+    t.string   "defaults",                                         array: true
     t.decimal  "cost"
     t.string   "location"
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
   end
 
   add_index "shoes", ["user_id"], name: "index_shoes_on_user_id", using: :btree

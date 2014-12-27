@@ -6,7 +6,7 @@
   <thead>
     <tr>
       <th>id</th>
-      <th>begin_at</th>
+      <th>Time</th>
       <th>Miles</th>
       <th>Pace</th>
       <th>HR</th>
@@ -20,7 +20,7 @@
       <tr>
         <% if run.is_a? Run %>
           <td><%= link_to run.garmin_id, "http://connect.garmin.com/activity/#{run.garmin_id}" %></td>
-          <td><%= run.begin_at %></td>
+          <td><%= run.time %></td>
           <td><%= run.display[:distance] %></td>
           <td><%= run.display[:pace] %></td>
           <td><%= run.mean_heart_rate %></td>

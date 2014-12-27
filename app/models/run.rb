@@ -28,14 +28,17 @@ class Run < ActiveRecord::Base
   # def distance
   #   self.attributes['distance'].round(2)
   # end
+  def time
+    self.begin_at.in_time_zone(self.time_zone)
+  end
   def display
     {
       distance:       self.attributes['distance'].round(2),
       pace:           Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, ''),
-      stride_length:  self.mean_stride_length.round(3),
-      cadence:        self.mean_cadence.round,
-      gct:            self.mean_gct.round,
-      vertical_oscillation: self.mean_vertical_oscillation.round(2),
+      stride_length:        self.mean_stride_length        && self.mean_stride_length.round(3),
+      cadence:              self.mean_cadence              && self.mean_cadence.round,
+      gct:                  self.mean_gct                  && self.mean_gct.round,
+      vertical_oscillation: self.mean_vertical_oscillation && self.mean_vertical_oscillation.round(2),
       duration:       Time.at(self.duration).utc.strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
     }
   end
@@ -79,7 +82,7 @@ class Run < ActiveRecord::Base
       m.pws = Station.closest(ll, list: local_pws)
     end.uniq
 
-    readings = pws_list.each_with_object({}) { |pws, hash| hash[pws.id] = pws.get_readings(self.begin_at) }
+    readings = pws_list.each_with_object({}) { |pws, hash| hash[pws.id] = pws.get_readings(self.time) }
 
     current_reading = nil
     useful = metrics.map do |m|
@@ -89,7 +92,7 @@ class Run < ActiveRecord::Base
         end
       rescue
         m.pws = Station.closest(m.latlong, list: local_pws - [m.pws])
-        readings[m.pws.id] = m.pws.get_readings(self.begin_at) unless readings.has_key(m.pws.id)
+        readings[m.pws.id] = m.pws.get_readings(self.time) unless readings.has_key?(m.pws.id)
         retry
       end
       m.reading = current_reading
@@ -124,8 +127,9 @@ class Run < ActiveRecord::Base
         garmin_id:                  %w{activityId},
         activity_type:              %w{activityType key},
         event_type:                 %w{eventType key},
-        begin_at:                   %w{activitySummary BeginTimestamp withUnitAbbr},
-        end_at:                     %w{activitySummary EndTimestamp withUnitAbbr},
+        begin_at:                   %w{activitySummary BeginTimestamp value},
+        end_at:                     %w{activitySummary EndTimestamp value},
+        time_zone:                  %w{activitySummary BeginTimestamp uom},
         latitude:                   %w{activitySummary BeginLatitude value},
         longitude:                  %w{activitySummary BeginLongitude value},
         distance:                   %w{activitySummary SumDistance value},
