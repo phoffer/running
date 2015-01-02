@@ -12,10 +12,29 @@
   <% end %>
 
 
-  <%= f.fields_for :laps do |lap| %>
-    <%= lap.text_field :distance, value: lap.object.display[:distance] %>
-    <br />
-  <% end %>
+  <table>
+    <thead>
+      <tr>
+        <th>Lap Number</th>
+        <th>Distance</th>
+        <th><%= (@run.treadmill? ? 'Incline' : 'Temp') %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= f.fields_for :laps do |lap| %>
+        <% lap.object.weather || lap.object.build_weather %>
+        <tr>
+          <td><%= lap.object.number %></td>
+          <td><%= lap.text_field :distance, value: lap.object.display[:distance] %></td>
+          <td>
+            <%= lap.fields_for :weather do |w| %>
+              <%= w.text_field :temp %><br />
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
   <div class="actions">
     <%= f.submit %>
   </div>

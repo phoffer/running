@@ -9,8 +9,8 @@ class User < ActiveRecord::Base
   def create_run(garmin_id)
     (self.runs << Run.find_or_create_from_garmin(garmin_id)).last
   end
-  def activities
-    run_arr = self.runs.to_a
+  def activities(includes: false)
+    run_arr = includes ? self.runs.includes(includes).to_a : self.runs.to_a
     activity_ids.map { |id| run_arr.detect{ |r| r.garmin_id == id } || id }
   end
 

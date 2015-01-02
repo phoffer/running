@@ -5,7 +5,7 @@ class RunsController < ApplicationController
   # GET /runs.json
   def index
     # @runs = Run.all
-    @activities = @user.activities
+    @activities = @user.activities(includes: [:weather, :shoe])
   end
 
   # GET /runs/1
@@ -48,9 +48,9 @@ class RunsController < ApplicationController
       if @run.update(run_params)
         if shoe_id
           @user.shoes.find(shoe_id).update_miles
-          @run.shoe.update_miles
+          # @run.shoe.update_miles # move this to callback, so it can get triggered after updating laps. need to update run.miles and shoe.miles
         end
-        format.html { redirect_to request.referrer, notice: 'Run was successfully updated.' }
+        format.html { redirect_to @run, notice: 'Run was successfully updated.' }
         format.json { render :show, status: :ok, location: @run }
       else
         format.html { render :edit }
@@ -79,6 +79,6 @@ class RunsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def run_params
-      params.require(:run).permit(:shoe_id, laps_attributes: [:id, :distance])
+      params.require(:run).permit(:shoe_id, laps_attributes: [:id, :distance, weather_attributes: [:id, :temp]], weather_attributes: [:id, :temp])
     end
 end

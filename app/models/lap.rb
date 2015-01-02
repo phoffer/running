@@ -1,7 +1,37 @@
 class Lap < ActiveRecord::Base
   belongs_to :run
   has_one :weather, as: :running
+
+  default_scope { includes(:weather).order(number: :asc) }
+
+
   delegate :temp, to: :weather, allow_nil: true
+
+  before_update :update_pace
+  after_update :update_run
+
+  accepts_nested_attributes_for :weather
+
+  def update_pace
+    if changes.include? 'distance'
+      self.mean_pace = self.duration / self.distance / 60.0
+      self.mean_stride_length = self.distance_in_meters / self.total_steps
+    end
+  end
+  def update_run
+    if changes.include? 'distance'
+      self.run.update_distance
+    end
+  end
+  def distance_in_meters
+    self.distance * 1609.34
+  end
+  def total_steps
+    self.mean_cadence * self.duration / 60.0
+  end
+  def pace
+    Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, '')
+  end
 
   def time_range
     (self.begin_at..self.end_at)
@@ -16,10 +46,10 @@ class Lap < ActiveRecord::Base
     {
       distance:       self.attributes['distance'].round(2),
       pace:           Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, ''),
-      stride_length:  self.mean_stride_length.round(3),
-      cadence:        self.mean_cadence.round,
-      gct:            self.mean_gct.round,
-      vertical_oscillation: self.mean_vertical_oscillation.round(2),
+      stride_length:  self.mean_stride_length              && self.mean_stride_length.round(3),
+      cadence:        self.mean_cadence                    && self.mean_cadence.round,
+      gct:            self.mean_gct                        && self.mean_gct.round,
+      vertical_oscillation: self.mean_vertical_oscillation && self.mean_vertical_oscillation.round(2),
       duration:       Time.at(self.duration).utc.strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
     }
   end

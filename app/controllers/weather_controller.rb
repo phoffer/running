@@ -27,16 +27,13 @@ class WeatherController < ApplicationController
     @run = Run.find(params[:run_id])
     @weather = @run.conditions
 
-    if request.xhr?
-      redirect_to request.referrer and return
-    end
     respond_to do |format|
       if @weather.save
         format.html { redirect_to request.referrer, notice: 'Weather was successfully created.' }
-        format.json { render :show, status: :created, location: @weather }
+        format.json { render json: @run.weather }
       else
         format.html { render :new }
-        format.json { render json: @weather.errors, status: :unprocessable_entity }
+        # format.json { render json: @weather.errors, status: :unprocessable_entity }
       end
     end
   end

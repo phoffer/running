@@ -9,8 +9,13 @@ class Run < ActiveRecord::Base
   has_one :weather, as: :running, dependent: :destroy
   has_many :readings, through: :weather
 
+  # after_commit :update_distance
+
+  default_scope { includes(:weather).order(begin_at: :desc) }
+
   delegate :temp, to: :weather, allow_nil: true
   accepts_nested_attributes_for :laps
+  accepts_nested_attributes_for :weather
 
   TREADMILL_CODE = 'treadmill_running'.freeze
   CATEGORIES = %i{wet rain snow treadmill track race}
@@ -21,7 +26,24 @@ class Run < ActiveRecord::Base
   def treadmill?
     self.activity_type == TREADMILL_CODE
   end
-
+  def weather_label
+    self.treadmill? ? 'Incline' : 'Temp'
+  end
+  def incline
+    self.treadmill? and self.weather_id and self.weather.temp
+  end
+  def distance_in_meters
+    self.distance * 1609.34
+  end
+  def total_steps
+    self.mean_cadence * self.duration / 60.0
+  end
+  def update_distance
+    self.distance = self.laps.pluck(:distance).inject(:+)
+    self.mean_pace = self.duration / self.distance / 60.0
+    self.mean_stride_length = self.distance_in_meters / self.total_steps
+    self.save
+  end
   def pace
     Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, '')
   end

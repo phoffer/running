@@ -10,7 +10,8 @@
       <th>Miles</th>
       <th>Pace</th>
       <th>HR</th>
-      <th>Temp</th>
+      <th>Temp | Incline</th>
+      <th>Shoe</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -25,6 +26,7 @@
           <td><%= run.display[:pace] %></td>
           <td><%= run.mean_heart_rate %></td>
           <td><%= run.weather ? run.temp : run.treadmill? ? '-treadmill-' : link_to('Retrieve Weather', run_weather_index_path(run), method: :post, class: 'retrieve_weather') %></td>
+          <td><%= run.shoe and run.shoe.name %></td>
           <td><%= link_to 'Show', run %></td>
           <td><%= link_to 'Edit', edit_run_path(run) %></td>
           <td><%= link_to 'Destroy', run, method: :delete, data: { confirm: 'Are you sure?' } %></td>
