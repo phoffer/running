@@ -46,10 +46,12 @@ class Lap < ActiveRecord::Base
     {
       distance:       self.attributes['distance'].round(2),
       pace:           Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, ''),
-      stride_length:  self.mean_stride_length              && self.mean_stride_length.round(3),
-      cadence:        self.mean_cadence                    && self.mean_cadence.round,
-      gct:            self.mean_gct                        && self.mean_gct.round,
-      vertical_oscillation: self.mean_vertical_oscillation && self.mean_vertical_oscillation.round(2),
+      elevation_gain: self.elevation_gain                   && self.elevation_gain.round,
+      elevation_loss: self.elevation_loss                   && self.elevation_loss.round,
+      stride_length:  self.mean_stride_length               && self.mean_stride_length.round(3),
+      cadence:        self.mean_cadence                     && self.mean_cadence.round,
+      gct:            self.mean_gct                         && self.mean_gct.round,
+      vertical_oscillation: self.mean_vertical_oscillation  && self.mean_vertical_oscillation.round(2),
       duration:       Time.at(self.duration).utc.strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
     }
   end
@@ -61,6 +63,8 @@ class Lap < ActiveRecord::Base
         end_at:                     %w{EndTimestamp value},
         distance:                   %w{SumDistance value},
         duration:                   %w{SumDuration value},
+        elevation_gain:             %w{activitySummary GainElevation value},
+        elevation_loss:             %w{activitySummary LossElevation value},
         mean_heart_rate:            %w{WeightedMeanHeartRate value},
         mean_pace:                  %w{WeightedMeanPace value},
         mean_stride_length:         %w{WeightedMeanStrideLength value},

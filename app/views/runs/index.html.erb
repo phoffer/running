@@ -26,7 +26,7 @@
           <td><%= run.display[:pace] %></td>
           <td><%= run.mean_heart_rate %></td>
           <td><%= run.weather ? run.temp : run.treadmill? ? '-treadmill-' : link_to('Retrieve Weather', run_weather_index_path(run), method: :post, class: 'retrieve_weather') %></td>
-          <td><%= run.shoe and run.shoe.name %></td>
+          <td><%= run.shoe_id ? link_to(run.shoe_name, shoe_path(run.shoe)) : '' %></td>
           <td><%= link_to 'Show', run %></td>
           <td><%= link_to 'Edit', edit_run_path(run) %></td>
           <td><%= link_to 'Destroy', run, method: :delete, data: { confirm: 'Are you sure?' } %></td>
