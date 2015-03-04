@@ -7,6 +7,7 @@
 # more stuff
 /misc
 .rbenv-vars
+*sublime-*
 
 # Ignore bundler config.
 /.bundle

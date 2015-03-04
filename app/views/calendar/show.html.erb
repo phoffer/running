@@ -1,0 +1,20 @@
+<h1>Calendar#show</h1>
+<p>Find me in app/views/calendar/show.html.erb</p>
+
+<p><%= @start_date %>
+
+<br />
+<br />
+<br />
+<br />
+
+<%= send(@calendar_method, @calendar_options) do |date, runs| %>
+  <% puts date.inspect %>
+  <%= date %>
+
+  <% runs.each do |run| %>
+    <div>
+      <%= run.overview %>
+    </div>
+  <% end %>
+<% end %>

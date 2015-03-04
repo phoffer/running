@@ -11,46 +11,61 @@
 <% end %>
 <br />
 <h4>Assign Shoe</h4>
-<% @user.shoes.each do |shoe| %>
+<% @user.shoes.usable.each do |shoe| %>
   <%= link_to shoe.name, run_path(@run, 'run[shoe_id]' => shoe.id), method: :patch, class: 'assign_shoe' %>
 <% end %>
 
 <br />
 <br />
 
-<% @run.display.each do |k,v| %>
-  <%= "#{k}: #{v}" %>
-  <br />
-<% end %>
+<table>
+  <% @run.display.each do |k,v| %>
+    <tr>
+      <td><%= k %></td>
+      <td><%= v %></td>
+    </tr>
+  <% end %>
 
-<% if @run.weather %>
   <% if @run.treadmill? %>
-    Incline: <%= @run.weather.temp %>
-  <% else %>
-    <br />
-    <%= link_to 'Destroy Weather', run_weather_path(@run.id, @run.weather.id), method: :delete, data: { confirm: 'Are you sure?' } %>
-    <br />
-    <% @run.weather.attributes.each do |k,v| %>
-      <%= "#{k}: #{v}" %>
-      <br />
-    <% end %>
-  <% end %>
-<% else %>
-  <% if @run.treadmill? %>
-    <%= form_for(@run) do |f| %>
-      <% @run.build_weather %>
-      <%= f.fields_for :weather do |w| %>
-        <%= w.label :incline %><br />
-        <%= w.text_field :temp %><br />
-      <% end %>
-      <div class="actions">
-        <%= f.submit %>
-      </div>
+    <% if @run.weather %>
+      <tr>
+        <td>Incline</td>
+        <td><%= @run.temp %></td>
+      </tr>
+    <% else %>
+      <tr>
+        <td>
+          <%= form_for(@run) do |f| %>
+            <% @run.build_weather %>
+            <%= f.fields_for :weather do |w| %>
+              <%= w.label :incline %><br />
+              <%= w.text_field :temp %><br />
+            <% end %>
+            <div class="actions">
+              <%= f.submit %>
+            </div>
+          <% end %>
+        </td>
+      </tr>
     <% end %>
   <% else %>
-    <%= link_to 'Retrieve Weather', run_weather_index_path(@run), method: :post, id: 'retrieve_weather' %>
+    <tr>
+      
+    </tr>
+    <tr>
+      <td>Temp</td>
+      <td class='temp'><%= @run && @run.temp %></td>
+    </tr>
+    <tr>
+      <td>High</td>
+      <td class='high'><%= @run && @run.high %></td>
+    </tr>
+    <tr>
+      <td>Low</td>
+      <td class='low'><%= @run && @run.low %></td>
+    </tr>
   <% end %>
-<% end %>
+</table>
 
 
 
@@ -61,7 +76,7 @@
       <th>number</th>
       <th>Time</th>
       <th>distance</th>
-      <th>pace</th>
+      <th><%= @run.track? ? 'time' : 'pace' %></th>
       <th>HR</th>
       <th><%= @run.weather_label %></th>
 
@@ -76,7 +91,7 @@
         <td><%= link_to lap.number, run_lap_path(@run, lap.number) %></td>
         <td><%= lap.time %></td>
         <td><%= lap.display[:distance] %></td>
-        <td><%= lap.display[:pace] %></td>
+        <td><%= @run.track? ? lap.display[:duration] : lap.display[:pace] %></td>
         <td><%= lap.mean_heart_rate %></td>
         <td><%= lap.temp %></td>
       </tr>

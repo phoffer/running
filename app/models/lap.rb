@@ -1,16 +1,16 @@
 class Lap < ActiveRecord::Base
   belongs_to :run
-  has_one :weather, as: :running
+  # has_one :weather, as: :running
 
-  default_scope { includes(:weather).order(number: :asc) }
+  default_scope { order(number: :asc) }
 
 
-  delegate :temp, to: :weather, allow_nil: true
+  # delegate :temp, to: :weather, allow_nil: true
 
   before_update :update_pace
   after_update :update_run
 
-  accepts_nested_attributes_for :weather
+  # accepts_nested_attributes_for :weather
 
   def update_pace
     if changes.include? 'distance'
@@ -31,6 +31,9 @@ class Lap < ActiveRecord::Base
   end
   def pace
     Time.at(self.mean_pace*60).strftime("%M:%S").gsub(/\A0/, '')
+  end
+  def weather
+    Weather.new(temp: self.temp, high: self.high, low: self.low, humidity: self.humidity, incline: self.incline)
   end
 
   def time_range
@@ -96,7 +99,7 @@ class Lap < ActiveRecord::Base
       create(attributes)
     end
     def get_source(activity_id)
-      JSON.parse(open("http://connect.garmin.com/proxy/activity-service-1.3/json/activity/#{activity_id}").read)
+      JSON.parse(open("https://connect.garmin.com/proxy/activity-service-1.3/json/activity/#{activity_id}").read)
     end
   end
 end

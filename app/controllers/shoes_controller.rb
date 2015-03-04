@@ -4,13 +4,13 @@ class ShoesController < ApplicationController
   # GET /shoes
   # GET /shoes.json
   def index
-    @shoes = @user.shoes.all
+    @shoes = current_user.shoes.all
   end
 
   # GET /shoes/1
   # GET /shoes/1.json
   def show
-    @runs = @shoe.runs
+    @runs = @shoe.runs.order(begin_at: :desc)
   end
 
   # GET /shoes/new
@@ -30,7 +30,7 @@ class ShoesController < ApplicationController
   # POST /shoes
   # POST /shoes.json
   def create
-    @shoe = @user.shoes.new(shoe_params)
+    @shoe = current_user.shoes.new(shoe_params)
 
     respond_to do |format|
       if @shoe.save
@@ -75,6 +75,6 @@ class ShoesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def shoe_params
-      params.require(:shoe).permit(:brand, :model, :version, :letter, :status, :miles, :expectation, :cost, :location, defaults: [])
+      params.require(:shoe).permit(:brand, :model, :version, :letter, :color, :status, :miles, :expectation, :cost, :location, defaults: [])
     end
 end

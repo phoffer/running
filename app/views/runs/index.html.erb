@@ -21,11 +21,22 @@
       <tr>
         <% if run.is_a? Run %>
           <td><%= link_to run.garmin_id, "http://connect.garmin.com/activity/#{run.garmin_id}" %></td>
-          <td><%= run.time %></td>
+          <td><%= run.time.asctime %></td>
           <td><%= run.display[:distance] %></td>
           <td><%= run.display[:pace] %></td>
           <td><%= run.mean_heart_rate %></td>
-          <td><%= run.weather ? run.temp : run.treadmill? ? '-treadmill-' : link_to('Retrieve Weather', run_weather_index_path(run), method: :post, class: 'retrieve_weather') %></td>
+          <td class='temp'>
+            <% if run.temp || run.incline %>
+              <%= run.temp || run.incline %>
+            <% elsif run.treadmill? %>
+              <%= form_for(run) do |f| %>
+                <%= f.text_field :temp, size: 5 %>
+                <%= f.submit %>
+              <% end %>
+            <% else %>
+              <%=link_to('Retrieve Weather', create_weather_run_path(run), method: :post, class: 'retrieve_weather') %>
+            <% end %>
+          </td>
           <td><%= run.shoe_id ? link_to(run.shoe_name, shoe_path(run.shoe)) : '' %></td>
           <td><%= link_to 'Show', run %></td>
           <td><%= link_to 'Edit', edit_run_path(run) %></td>

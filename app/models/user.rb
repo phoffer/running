@@ -10,7 +10,7 @@ class User < ActiveRecord::Base
     (self.runs << Run.find_or_create_from_garmin(garmin_id)).last
   end
   def activities(includes: false)
-    run_arr = includes ? self.runs.includes(includes).to_a : self.runs.to_a
+    run_arr = self.runs.includes(:shoe).to_a
     activity_ids.map { |id| run_arr.detect{ |r| r.garmin_id == id } || id }
   end
 
@@ -20,7 +20,7 @@ class User < ActiveRecord::Base
   end
   def activity_list(limit = 100, start = 1)
     return @activity_list if @activity_list
-    uri = URI "http://connect.garmin.com/proxy/activitylist-service/activities/#{self.garmin_id}?start=#{start}&limit=#{limit}"
+    uri = URI "https://connect.garmin.com/proxy/activitylist-service/activities/#{self.garmin_id}?start=#{start}&limit=#{limit}"
     @activity_list = JSON.parse(Net::HTTP.get(uri))['activityList']
   end
 

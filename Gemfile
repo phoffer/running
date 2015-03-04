@@ -1,8 +1,10 @@
 source 'https://rubygems.org'
 
+gem "simple_calendar", "~> 1.1.0"
+gem 'haversine', '~> 0.3.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails'
+gem 'rails', '~> 4.2.0'
 # Use postgresql as the database for Active Record
 gem 'pg'
 # Use SCSS for stylesheets
@@ -42,8 +44,7 @@ group :development, :test do
   gem 'web-console', '~> 2.0.0.beta4'
 
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
+#   gem 'spring'
 end
 
 
-gem 'haversine'

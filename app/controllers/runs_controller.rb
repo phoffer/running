@@ -1,11 +1,19 @@
 class RunsController < ApplicationController
-  before_action :set_run, only: [:show, :edit, :update, :destroy]
+  before_action :set_run, only: [:show, :edit, :update, :destroy, :weather, :create_weather]
 
   # GET /runs
   # GET /runs.json
   def index
     # @runs = Run.all
-    @activities = @user.activities(includes: [:weather, :shoe])
+    @activities = current_user.activities(includes: [:shoe])
+  end
+
+  def weather
+    @weather = @run.conditions
+  end
+  def create_weather
+    @weather = @run.conditions
+    redirect_to request.referrer
   end
 
   # GET /runs/1
@@ -25,7 +33,7 @@ class RunsController < ApplicationController
   # POST /runs
   # POST /runs.json
   def create
-    @run = @user.create_run(params[:garmin_id])
+    @run = current_user.create_run(params[:garmin_id])
     redirect_to request.referrer and return
     # @run = Run.new(run_params)
 
@@ -47,10 +55,10 @@ class RunsController < ApplicationController
     respond_to do |format|
       if @run.update(run_params)
         if shoe_id
-          @user.shoes.find(shoe_id).update_miles
+          current_user.shoes.find(shoe_id).update_miles
           # @run.shoe.update_miles # move this to callback, so it can get triggered after updating laps. need to update run.miles and shoe.miles
         end
-        format.html { redirect_to @run, notice: 'Run was successfully updated.' }
+        format.html { redirect_to request.referrer, notice: 'Run was successfully updated.' }
         format.json { render :show, status: :ok, location: @run }
       else
         format.html { render :edit }
@@ -72,13 +80,13 @@ class RunsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_run
-      @run      = @user.runs.find(params[:id])
+      @run      = current_user.runs.find(params[:id])
       @laps     = @run.laps
       @weather  = @run.weather
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def run_params
-      params.require(:run).permit(:shoe_id, laps_attributes: [:id, :distance, weather_attributes: [:id, :temp]], weather_attributes: [:id, :temp])
+      params.require(:run).permit(:shoe_id, :temp, laps_attributes: [:id, :distance, :temp])
     end
 end

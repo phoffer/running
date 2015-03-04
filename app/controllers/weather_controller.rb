@@ -25,7 +25,7 @@ class WeatherController < ApplicationController
   # POST /weathers.json
   def create
     @run = Run.find(params[:run_id])
-    @weather = @run.conditions
+    # @weather = @run.conditions
 
     respond_to do |format|
       if @weather.save

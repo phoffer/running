@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150102225649) do
+ActiveRecord::Schema.define(version: 20150214204844) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,7 +19,7 @@ ActiveRecord::Schema.define(version: 20150102225649) do
 
   create_table "laps", force: :cascade do |t|
     t.integer  "run_id"
-    t.string   "number"
+    t.integer  "number"
     t.datetime "begin_at"
     t.datetime "end_at"
     t.float    "distance"
@@ -34,6 +34,12 @@ ActiveRecord::Schema.define(version: 20150102225649) do
     t.datetime "updated_at",                null: false
     t.float    "elevation_gain"
     t.float    "elevation_loss"
+    t.float    "temp"
+    t.float    "high"
+    t.float    "low"
+    t.float    "humidity"
+    t.string   "station_ids"
+    t.float    "incline"
   end
 
   add_index "laps", ["run_id"], name: "index_laps_on_run_id", using: :btree
@@ -73,6 +79,12 @@ ActiveRecord::Schema.define(version: 20150102225649) do
     t.datetime "updated_at",                null: false
     t.float    "elevation_gain"
     t.float    "elevation_loss"
+    t.float    "temp"
+    t.float    "high"
+    t.float    "low"
+    t.float    "humidity"
+    t.string   "station_ids"
+    t.float    "incline"
   end
 
   add_index "runs", ["garmin_id"], name: "index_runs_on_garmin_id", using: :btree
@@ -93,6 +105,7 @@ ActiveRecord::Schema.define(version: 20150102225649) do
     t.string   "location"
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
+    t.string   "color"
   end
 
   add_index "shoes", ["user_id"], name: "index_shoes_on_user_id", using: :btree

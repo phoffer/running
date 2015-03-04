@@ -8,6 +8,7 @@
       <th>Brand</th>
       <th>Model</th>
       <th>Version</th>
+      <th>Color</th>
       <th>Miles</th>
       <th>Expectation</th>
       <th>Cost</th>
@@ -22,6 +23,7 @@
         <td><%= shoe.brand %></td>
         <td><%= shoe.model %></td>
         <td><%= shoe.version.to_s + ' - ' + shoe.letter %></td>
+        <td><%= shoe.color %></td>
         <td><%= shoe.miles.round(2) %></td>
         <td><%= shoe.expectation %></td>
         <td><%= shoe.cost %></td>

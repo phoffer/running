@@ -1,10 +1,15 @@
 Rails.application.routes.draw do
-  root 'users#index'
+
+  get 'calendar',                                to: 'calendar#show'
+  get 'calendar/:year/:month',                   to: 'calendar#monthly'
+  get 'calendar/weekly(/:start_date/:end_date)', to: 'calendar#weekly'
+
+  root 'runs#index'
   resources :runs do
     resources :laps
-    resources :weather
     member do
-      # 
+      get 'weather'
+      post 'create_weather'
     end
   end
 
