@@ -6,11 +6,23 @@ class Shoe < ActiveRecord::Base
   scope :inactive, -> { where(status: 1) }
   scope :usable,   -> { where.not(status: 2) }
 
+  after_create :set_unique
+
 
   STATUS = %i{active inactive retired}
 
+  def set_unique
+    others = self.class.where(brand: self.brand, model: self.model, version: self.version, color: self.color)
+    if others.size != 1
+      others.update_all(unique: false)
+      self.update_attribute(:unique, false)
+    end
+  end
+  def unique?
+    self.unique
+  end
   def name
-    "#{brand} #{model} #{version} - #{letter}"
+    self.unique? ? "#{model} #{version} - #{color}" : "#{model} #{version} #{color} - #{letter}"
   end
   def status
     STATUS[read_attribute(:status)||0]

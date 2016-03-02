@@ -11,6 +11,9 @@ Rails.application.routes.draw do
       get 'weather'
       post 'create_weather'
     end
+    collection do
+      get 'stats'
+    end
   end
 
   resources :shoes

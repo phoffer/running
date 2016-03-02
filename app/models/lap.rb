@@ -57,6 +57,11 @@ class Lap < ActiveRecord::Base
       vertical_oscillation: self.mean_vertical_oscillation  && self.mean_vertical_oscillation.round(2),
       duration:       Time.at(self.duration).utc.strftime(self.duration >= 3600 ? "%l:%M:%S" : "%M:%S").gsub(/\A0/, ''),
     }
+  rescue => e
+    update_attribute(:mean_pace, self.distance / self.duration)
+    @retry ||= -1
+    @retry += 1
+    retry if @retry < 1
   end
 
   class << self
@@ -66,8 +71,8 @@ class Lap < ActiveRecord::Base
         end_at:                     %w{EndTimestamp value},
         distance:                   %w{SumDistance value},
         duration:                   %w{SumDuration value},
-        elevation_gain:             %w{activitySummary GainElevation value},
-        elevation_loss:             %w{activitySummary LossElevation value},
+        elevation_gain:             %w{GainElevation value},
+        elevation_loss:             %w{LossElevation value},
         mean_heart_rate:            %w{WeightedMeanHeartRate value},
         mean_pace:                  %w{WeightedMeanPace value},
         mean_stride_length:         %w{WeightedMeanStrideLength value},
@@ -77,14 +82,19 @@ class Lap < ActiveRecord::Base
       }
     end
     def new_from_garmin(data, number)
+      create(attributes_from_garmin(data, number))
+    end
+    def attributes_from_garmin(data, number)
       json = data
-      attributes = new_from_json(json) do |attributes|
+      attributes_from_json(json) do |attributes|
         attributes[:begin_at] = Time.at(("%f" % attributes[:begin_at].gsub('E', 'e')).to_i/1000)
         attributes[:end_at]   = Time.at(("%f" % attributes[:end_at].gsub('E', 'e')).to_i/1000)
         attributes[:number]   = number
+        attributes[:elevation_loss] ||= 0
+        attributes[:elevation_gain] ||= 0
       end
     end
-    def new_from_json(json)
+    def attributes_from_json(json)
       attributes = attribute_paths.each_with_object({}) do |(name, path), hash|
         begin
           hash[name] = json
@@ -96,10 +106,17 @@ class Lap < ActiveRecord::Base
         end
       end
       yield attributes
-      create(attributes)
+      attributes
     end
     def get_source(activity_id)
       JSON.parse(open("https://connect.garmin.com/proxy/activity-service-1.3/json/activity/#{activity_id}").read)
     end
   end
 end
+# Run.where(begin_at: (Date.today.beginning_of_year..Date.tomorrow), mean_heart_rate: (135..164) ).includes(:laps).pluck('laps.mean_pace');
+
+# lap_info = Run.where(begin_at: (Date.today.beginning_of_year..Date.tomorrow), mean_heart_rate: (135..200), laps: {mean_pace: (1..9.9), distance: (0.4..3)} ).where.not(activity_type: 'treadmill_running').includes(:laps).pluck('laps.mean_pace', 'laps.temp', 'laps.mean_heart_rate','laps.distance', 'laps.elevation_gain', 'laps.elevation_loss')
+# lap_info = Run.where(begin_at: (Date.today.beginning_of_year..Date.tomorrow.beginning_of_year+59), mean_heart_rate: (135..200), laps: {mean_pace: (1..9.9), distance: (0.4..3)} ).where.not(activity_type: 'treadmill_running').includes(:laps).pluck('laps.mean_pace', 'laps.temp', 'laps.mean_heart_rate','laps.distance', 'laps.elevation_gain', 'laps.elevation_loss')
+# lap_info = Run.where(begin_at: (Date.today.beginning_of_year+59..Date.tomorrow), mean_heart_rate: (135..200), laps: {mean_pace: (1..9.9), distance: (0.4..3)} ).where.not(activity_type: 'treadmill_running').includes(:laps).pluck('laps.mean_pace', 'laps.temp', 'laps.mean_heart_rate','laps.distance', 'laps.elevation_gain', 'laps.elevation_loss')
+# csv_str = lap_info.unshift(%w{pace temp heart_rate distance gain loss}).map {|lap| lap.to_csv }.join
+# File.write('laps.csv', csv_str)

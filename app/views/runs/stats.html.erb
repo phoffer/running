@@ -1,0 +1,103 @@
+<%= form_for(:filters, method: :get ) do |f| %>
+  <% params[:filters] ||= {} %>
+  <%= f.date_select :begin_after, include_blank: params[:filters][:begin_after].blank?, value: params[:filters][:begin_after].presence && @form.begin_after %>
+  <br />
+  <%= f.date_select :begin_before, include_blank: params[:filters][:begin_before].blank?, value: params[:filters][:begin_before].presence && @form.begin_before %>
+  <br />
+  <%= f.text_field :hr_above, value: params[:filters][:hr_above] %>
+  <br />
+  <%= f.text_field :hr_below, value: params[:filters][:hr_below] %>
+  <br />
+  <%= f.fields_for :laps do |l| %>
+    <%= l.text_field :distance_below, value: params[:filters][:distance_below] %>
+    <br />
+    <%= l.text_field :distance_above, value: params[:filters][:distance_above] %>
+    <br />
+  <% end %>
+
+  <%= f.submit %>
+<% end %>
+
+<div id="container" style="width:900px; height:400px;"></div>
+
+
+<script>
+  function create_chart(json) {
+    $('#container').highcharts({
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Temp and HR vs Pace'
+        },
+        subtitle: {
+            text: ''
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'Temp/HR'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'Pace'
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'top',
+            x: 100,
+            y: -5,
+            floating: true,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+            borderWidth: 1
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<b>{series.name}</b><br>',
+                    pointFormat: '{point.x}, {point.y}'
+                }
+            }
+        },
+        series: json['series']
+    });
+};
+  <% if @chart_data %>
+    create_chart(<%= @chart_data.to_json %>);
+  <% end %>
+  $('form').submit(function(e){
+    e.preventDefault();
+    $.ajax({
+      url: $(this).attr('action') + '.json',
+      data: $(this).serialize(),
+    }).done(function(data){
+      console.log(data);
+      create_chart(data);
+      
+    })
+
+  });
+</script>

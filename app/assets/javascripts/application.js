@@ -14,3 +14,13 @@
 //= require jquery_ujs
 //= require turbolinks
 //= require_tree .
+
+function zipArrays(a, b){
+    var ret = [];
+
+    for(var i = 0; i < a.length; i++){
+        ret.push(a[i]);
+        ret.push(b[i]);
+    }
+    return ret;
+}

@@ -134,9 +134,10 @@ class Run < ActiveRecord::Base
           current_reading = readings[m.pws.id].shift
         end
       rescue
+        i ||= 0
         m.pws = Station.closest(m.latlong, list: local_pws - [m.pws])
         readings[m.pws.id] = m.pws.get_readings(self.time) unless readings.has_key?(m.pws.id)
-        retry
+        retry unless (i += 1) == 4
       end
       m.reading = current_reading
     end
@@ -194,14 +195,15 @@ class Run < ActiveRecord::Base
         mean_vertical_oscillation:  %w{activitySummary WeightedMeanVerticalOscillation value},
       }
     end
-    def find_or_create_from_garmin(data)
-      run = find_by_garmin_id(data)
+    def find_or_create_from_garmin(garmin_id)
+      run = find_by_garmin_id(garmin_id)
       return run if run
-      json = get_source(data)
-      run = new_from_json(json['activity']) do |attributes|
+      json = get_source(garmin_id)
+      attributes = attributes_from_json(json['activity']) do |attributes|
         attributes[:begin_at]  = Time.parse(attributes[:begin_at])
         attributes[:end_at]    = Time.parse(attributes[:end_at])
       end
+      run = create(attributes)
       hr_exist = json['activity']['activitySummary'].has_key? 'WeightedMeanHeartRate'
       stored_max = (1.0 / json['activity']['activitySummary']['WeightedMeanHeartRate']['value'].to_f) * run.mean_heart_rate.to_f if hr_exist
       run.laps = json['activity']['totalLaps']['lapSummaryList'].map.with_index do |hash, i|
@@ -210,7 +212,14 @@ class Run < ActiveRecord::Base
       end
       run
     end
-    def new_from_json(json)
+    def attributes_from_garmin_id(garmin_id)
+      json = get_source(garmin_id)
+      attributes = attributes_from_json(json['activity']) do |attributes|
+        attributes[:begin_at]  = Time.parse(attributes[:begin_at])
+        attributes[:end_at]    = Time.parse(attributes[:end_at])
+      end
+    end
+    def attributes_from_json(json)
       attributes = attribute_paths.each_with_object({}) do |(name, path), hash|
         begin
           hash[name] = json
@@ -222,7 +231,7 @@ class Run < ActiveRecord::Base
         end
       end
       yield attributes
-      create(attributes)
+      attributes
     end
     def get_source(activity_id)
       JSON.parse(open("https://connect.garmin.com/proxy/activity-service-1.3/json/activity/#{activity_id}").read)

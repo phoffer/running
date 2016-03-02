@@ -4,9 +4,15 @@
   <title>Running</title>
   <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'http://code.highcharts.com/highcharts.js' %>
+  <%= javascript_include_tag 'http://code.highcharts.com/modules/exporting.js' %>
   <%= csrf_meta_tags %>
 </head>
 <body>
+<div style='float: left;'>
+<%= link_to 'stats', stats_runs_path %>
+<%= link_to 'runs', runs_path %>
+<%= link_to 'shoes', shoes_path %>
 
 <%= yield %>
 
